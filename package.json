@@ -1,0 +1,42 @@
+{
+  "name": "larvitvue",
+  "version": "0.1.0",
+  "description": "Middleware to server side render Vue instances and hydrate the client afterwards",
+  "main": "index",
+  "scripts": {
+    "test": "./node_modules/tape/bin/tape ./test/*",
+    "postinstall": "cd public/vue && rm -f package-lock.json && rm -rf node_modules && npm i"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/larvit/larvitvue.git"
+  },
+  "keywords": [
+    "vue",
+    "middleware",
+    "template",
+    "ssr"
+  ],
+  "author": {
+    "name": "Mikael 'Lilleman' Göransson",
+    "email": "lilleman@larvit.se",
+    "url": "https://github.com/larvit/larvitvue"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/larvit/larvitvue/issues"
+  },
+  "homepage": "https://github.com/larvit/larvitvue#readme",
+  "dependencies": {
+    "vue": "^2.5.17",
+    "vue-server-renderer": "^2.5.17"
+  },
+  "devDependencies": {
+    "async": "2.6.1",
+    "coveralls": "3.0.2",
+    "eslint": "5.5.0",
+    "istanbul": "0.4.5",
+    "tape": "4.9.1",
+    "tape-eslint": "1.2.1"
+  }
+}
