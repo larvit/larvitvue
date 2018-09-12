@@ -1,6 +1,6 @@
 {
   "name": "larvitvue",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "description": "Middleware to server side render Vue instances and hydrate the client afterwards",
   "main": "index",
   "scripts": {
@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/larvit/larvitvue#readme",
   "dependencies": {
+    "larvitfs": "^2.3.0",
     "vue": "^2.5.17",
     "vue-server-renderer": "^2.5.17"
   },

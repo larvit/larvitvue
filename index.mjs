@@ -1,109 +1,124 @@
-import { default as async }            from 'async';
-import * as http                       from 'http';
+import Lfs                             from 'larvitfs';
 import * as fs                         from 'fs';
-import loadComponent                   from './loadComponent.mjs';
 import { default as Vue }              from 'vue';
 import { default as vueRendererFuncs } from 'vue-server-renderer';
 
-const port        = 3010;
-const mainTmpl    = fs.readFileSync('./public/vue/components/main.html', 'utf-8');
-const vueRenderer = vueRendererFuncs.createRenderer({
-	'template': fs.readFileSync('./public/vue/index.template.html', 'utf-8')
-});
+const topLogPrefix = 'larvitvue: index.mjs - ';
 
-function reqHandler(req, res) {
-	console.log('Request to: ' + req.url);
+function VueMw(options) {
+	const logPrefix = topLogPrefix + 'VueMw() - ';
+	const that      = this;
 
-	const tasks = [];
+	that.options = options || {};
 
-	if (req.url === '/') {
-		const components = {'nisse': undefined};
-		const pageTitle  = 'the title';
-		const headTags   = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
-		const appData    = {
-			'message': 'True thing'
-		}
+	if (! that.options.log) {
+		that.options.log = {
+			'error':   function (str) { console.log('ERRO: ' + str); },
+			'warn':    function (str) { console.log('WARN: ' + str); },
+			'info':    function (str) { console.log('INFO: ' + str); },
+			'verbose': function (str) { console.log('VERB: ' + str); },
+			'debug':   function (str) { /*console.log('DEBU: ' + str);*/ },
+			'silly':   function (str) { /*console.log('SILL: ' + str);*/ }
+		};
 
-		let clientApp = '';
-		let htmlStr;
-
-		clientApp += 'import loadComponent from \'/vue/loadComponent.mjs\';\n';
-		clientApp += 'const tasks      = [];\n';
-		clientApp += '\n';
-		clientApp += 'const appContext      = {};\n';
-		clientApp += 'appContext.components = {};\n';
-		clientApp += 'appContext.template   = `' + mainTmpl + '`;\n';
-		clientApp += '\n';
-
-		// Load components
-		for (const componentName of Object.keys(components)) {
-			clientApp += 'tasks.push(function (cb) {\n';
-			clientApp += '	loadComponent(\'' + componentName + '\', function (err, result) {\n';
-			clientApp += '		if (err) throw err;\n';
-			clientApp += '		appContext.components[\'' + componentName + '\'] = result;\n';
-			clientApp += '		cb();\n';
-			clientApp += '	});\n';
-			clientApp += '});\n';
-			clientApp += '\n';
-
-			tasks.push(function (cb) {
-				loadComponent(componentName, function (err, component) {
-					if (err) return cb(err);
-					components[componentName] = component;
-					cb();
-				});
-			});
-		}
-
-		clientApp += 'async.parallel(tasks, function (err) {\n';
-
-clientApp += 'const p = document.createElement(\'p\');\n';
-clientApp += 'p.textContent = \'mounting app\';\n';
-clientApp += 'document.body.appendChild(p);\n';
-
-		clientApp += '	if (err) throw err;\n';
-		clientApp += '	window.appData  = ' + JSON.stringify(appData) + ';\n'; // Expose outside this module
-		clientApp += '	appContext.data = window.appData;\n';
-		clientApp += '	const app       = new Vue(appContext);\n';
-		clientApp += '	app.$mount(\'#app\');\n';
-		clientApp += '});\n';
-
-		// Render to string
-		tasks.push(function (cb) {
-			const appContext = {};
-			appContext.components = components;
-			appContext.template   = mainTmpl;
-			appContext.data       = appData;
-
-			const app = new Vue(appContext);
-
-			const rendererContext = {
-				'clientApp': clientApp,
-				'headTags':  headTags,
-				'title':     pageTitle
-			};
-
-			vueRenderer.renderToString(app, rendererContext, function (err, result) {
-				if (err) return cb(err);
-				htmlStr = result;
-				cb();
-			});
-		});
-
-		async.series(tasks, function (err) {
-			if (err) throw err;
-			res.end(htmlStr);
-		});
-	} else {
-		res.statusCode = 404;
-		res.end('404 Not Found');
+		that.options.log.warn(logPrefix + 'Fix larvitutils for logging in this module!!!!');
 	}
+	that.log = that.options.log;
+
+
+	if (! that.options.mainTmplPath) {
+		that.log.info(logPrefix + 'No mainTmplPath option given, using "./public/vue/components/main.html"');
+		that.options.mainTmplPath = './public/vue/components/main.html';
+	}
+
+	if (! that.options.indexTmplPath) {
+		that.log.info(logPrefix + 'No indexTmplPath option given, using "./public/vue/index.template.html"');
+		that.options.indexTmplPath = './public/vue/index.template.html';
+	}
+
+	if (! that.options.headTags) {
+		that.log.info(logPrefix + 'No headTags option given, using "<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />"');
+		that.options.headTags = '<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />';
+	}
+
+	if (! that.options.lfs) {
+		that.log.verbose(logPrefix + 'No custom lfs (larvitfs) instance supplied, using default one');
+		that.options.lfs = new Lfs({'log': that.log});
+	}
+
+	for (const key of Object.keys(that.options)) {
+		that[key] = that.options[key];
+	}
+
+	that.mainTmpl = fs.readFileSync(that.lfs.getPathSync(that.mainTmplPath), 'utf-8');
+
+	that.vueRenderer = vueRendererFuncs.createRenderer({
+		'template': fs.readFileSync(that.lfs.getPathSync(that.indexTmplPath), 'utf-8')
+	});
 }
 
-const server = http.createServer(reqHandler)
+VueMw.prototype.run = function run(req, res, cb) {
+	const logPrefix = topLogPrefix + 'run() - ';
+	const that      = this;
 
-server.listen(port, function (err) {
+	if (typeof cb !== 'function') {
+		cb = function () {};
+	}
+
+	if ( ! res.vueComponents) {
+		res.vueComponents = {};
+	}
+
+	let clientApp = `
+import loadComponent from '/vue/loadComponent.mjs';
+
+const tasks           = [];
+const appContext      = {};
+const componentNames  = ${Object.keys(res.vueComponents)};
+appContext.components = {};
+appContext.template   = \`${that.mainTmpl}\`;
+appContext.data       = ${JSON.stringify(res.data)};
+
+for (const componentName of componentNames) {
+	tasks.push(function (cb) {
+		loadComponent(componentName, function (err, component) {
+			if (err) throw err;
+
+			appContext.components[componentName] = component;
+		});
+	});
+}
+
+async.parallel(tasks, function 8err) {
 	if (err) throw err;
 
-	console.log('server is listening on ' + port);
-});
+	const app = new Vue(appContext);
+	app.$mount('#app');
+});`
+
+	// Render to string
+	const appContext      = {};
+	appContext.template   = that.mainTmpl;
+	appContext.data       = res.data;
+	appContext.components = res.vueComponents;
+
+	const app = new Vue(appContext);
+
+	const rendererContext = {
+		'clientApp': clientApp,
+		'headTags':  that.headTags,
+		'title':     res.data.htmlTitle
+	};
+
+	that.vueRenderer.renderToString(app, rendererContext, function (err, result) {
+		if (err) {
+			that.log.error(logPrefix + 'Counld not render template to string, err: ' + err.message);
+			return cb(err);
+		}
+
+		res.renderedData = result;
+		cb();
+	});
+};
+
+export default VueMw;
