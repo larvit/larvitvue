@@ -1,5 +1,7 @@
 # Vue server side rendered without build step - The basics
 
+This guide will setup a basic http server with [express](https://expressjs.com/) and Vue Server Side Render as well as the client side hidration to get your Vue app running in the browser.
+
 ## Requirements
 
 nodejs 10+
