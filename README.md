@@ -11,7 +11,7 @@ nodejs 10+
 ```bash
 mkdir vueSSRApp # Main app folder
 mkdir vueSSRApp/public # Used for files we want to be accessible via the browser
-cd vueSsrApp # Enter our newly created app folder
+cd vueSSRApp # Enter our newly created app folder
 ```
 
 ### Create the files we need
