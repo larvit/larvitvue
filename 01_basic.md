@@ -61,7 +61,7 @@ window.appData here is used to sync the initial state from the server to the cli
 <html lang="en">
 	<head>
 		<title>{{ title }}</title>
-		{{{ headMeta }}}
+		{{{ headTags }}}
 		<script>
 			window.appData = {{{ appData }}};
 		</script>
@@ -121,7 +121,7 @@ httpApp.get('*', (req, res) => {
 	// Context sent to the server side renderer
 	const appContext = {
 		title: 'Woffbluff',
-		headMeta: '',
+		headTags: '<meta charset="utf-8" />',
 		appData: JSON.stringify(appData) // Serialized exact copy of the appData so we can hydrate correctly on the client side
 	}
 
