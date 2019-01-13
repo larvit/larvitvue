@@ -102,7 +102,7 @@ Used to mount the vue app on the web page once its all been loaded into the
 browser.
 
 ```javascript
-import Vue from './js/vue/vue.esm.browser.js';
+import Vue from './js/vue/vue.esm.js';
 import App from './app.mjs';
 
 // Instanciate the app, using window.appData for data.
@@ -132,6 +132,9 @@ It is important for performance reasons to load the client.mjs script async, so 
 		<script>
 			/* Load the app state here */
 			window.appData = {{{ appData }}};
+
+			/* Set process.env.NODE_ENV since vue ESM dists are not adjusted to browsers yet */
+			process = { env: { NODE_ENV: {{ nodeEnv }}}};
 		</script>
 		<script async src="client.mjs" type="module"></script>
 	</head>
@@ -179,6 +182,7 @@ httpApp.get('*', (req, res) => {
 	const appContext = {
 		title: 'Page title',
 		headTags: '<meta charset="utf-8" />',
+		nodeEnv: process.env.NODE_ENV || 'development' // Needed for vue ESM dist files to work properly in browsers
 
 		// Serialized exact copy of the appData so we can hydrate correctly on the client side
 		appData: JSON.stringify(appData)
