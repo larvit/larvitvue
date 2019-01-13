@@ -267,7 +267,7 @@ const httpServer = httpApp.listen(port, (err) => {
 ## Add router support to public/client.mjs
 
 ```javascript
-import Vue from './js/vue/vue.esm.browser.js';
+import Vue from './js/vue/vue.esm.js';
 import Router from './js/vue-router/vue-router.esm.js';
 import App from './app.mjs';
 
