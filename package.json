@@ -1,0 +1,27 @@
+{
+  "name": "larvitvue",
+  "version": "0.1.0",
+  "description": "Vue utils for server side rendering",
+  "main": "index.mjs",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/larvit/larvitvue.git"
+  },
+  "keywords": [
+    "vue",
+    "SSR",
+    "ES6"
+  ],
+  "author": {
+    "name": "Mikael 'Lilleman' Göransson",
+    "email": "lilleman@larvit.se"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/larvit/larvitvue/issues"
+  },
+  "homepage": "https://github.com/larvit/larvitvue#readme"
+}
