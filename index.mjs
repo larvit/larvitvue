@@ -1,3 +1,5 @@
+const topLogPrefix = 'larvitvue: ';
+
 /**
  * Base Vue App constructor
  *
@@ -15,7 +17,7 @@
  *	@param {func} cb Callback
  */
 export function appCreator(options, cb) {
-	const logPrefix = 'public/appCreator.js: appCreator() - ';
+	const logPrefix = topLogPrefix + 'appCreator() - ';
 	const errors = [];
 
 	if (!options) options = {};
@@ -105,3 +107,23 @@ export function appCreator(options, cb) {
 		cb(err);
 	});
 }
+
+export const htmlTemplate = `<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>{{ title }}</title>
+		{{{ headTags }}}
+		<script>
+			/* We need this because vue-router esm does not play well with browsers otherwise */
+			/* It is also a nice thing to have the NODE_ENV around */
+			const process = { env: { NODE_ENV: {{{ nodeEnv }}} }};
+
+			/* Load the app state here */
+			window.appData = {{{ appData }}};
+		</script>
+		<script async src="client.mjs" type="module"></script>
+	</head>
+	<body>
+		<!--vue-ssr-outlet-->
+	</body>
+</html>`;
